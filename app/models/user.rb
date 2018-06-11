@@ -42,6 +42,24 @@ class User < ActiveRecord::Base
     user = find_by_id(id)
     user.name
   end
+  
+  def self.invalidate_token
+    self.update(token: nil, token_created_at: Time.zone.now)
+  end
+
+  def allow_token_to_be_used_only_once
+    if(48.hours.ago.to_i > Time.parse(self.token_created_at.to_s).to_i)
+      token = SecureRandom.hex
+      self.update(token: token, token_created_at: Time.zone.now)
+    else
+      token = self.token
+    end
+    token
+  end
+
+  def self.with_unexpired_token(token, period)
+    where(token: token).where('token_created_at >= ?', period).first
+  end
 
   private
   def clear_cache
