@@ -1,4 +1,5 @@
 class ApiProcessesController < ApplicationController
+  before_action :current_user, except: [:login]
 
   def login
     if user = User.authenticate(params[:email], params[:password], @account.id)
